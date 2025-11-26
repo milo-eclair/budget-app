@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.budgetapp.repository.mybatis.CategoryMapper">
+
+    <!-- delete_flg = false のみ取得 -->
+    <select id="findAll" resultType="com.example.budgetapp.model.Category">
+        SELECT *
+        FROM tb_mst_category
+        WHERE delete_flg = false
+    </select>
+
+    <select id="findById" parameterType="java.lang.Integer" resultType="com.example.budgetapp.model.Category">
+        SELECT *
+        FROM tb_mst_category
+        WHERE category_id = #{categoryId} AND delete_flg = false
+    </select>
+
+    <insert id="insert" parameterType="com.example.budgetapp.model.Category">
+        INSERT INTO tb_mst_category (
+            category_name,
+            user_id,
+            delete_flg,
+            create_user,
+            create_date,
+            update_user,
+            update_date
+        )
+        VALUES (
+            #{categoryName},
+            #{userId},
+            COALESCE(#{deleteFlg}, false),
+            #{createUser},
+            COALESCE(#{createDate}, CURRENT_TIMESTAMP),
+            #{updateUser},
+            COALESCE(#{updateDate}, CURRENT_TIMESTAMP)
+        )
+    </insert>
+
+    <update id="update" parameterType="com.example.budgetapp.model.Category">
+        UPDATE tb_mst_category
+        SET category_name = #{categoryName},
+            user_id = #{userId},
+            delete_flg = #{deleteFlg},
+            update_user = #{updateUser},
+            update_date = #{updateDate}
+        WHERE category_id = #{categoryId}
+    </update>
+
+    <!-- 物理削除 -->
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        DELETE FROM tb_mst_category
+        WHERE category_id = #{categoryId}
+    </delete>
+
+    <!-- DailyCalendar用：ユーザーID別カテゴリ + Systemカテゴリ -->
+    <select id="findAllByUserIdOrGlobal" resultType="com.example.budgetapp.model.Category">
+        SELECT *
+        FROM tb_mst_category
+        WHERE delete_flg = false
+          AND (user_id = 1 OR user_id = #{userId})
+        ORDER BY
+            CASE 
+                WHEN category_name = '食費' THEN 1
+                WHEN category_name = '生活雑費' THEN 2
+                WHEN user_id = #{userId} THEN 3
+                WHEN category_name = 'その他' THEN 4
+                ELSE 5
+            END,
+            category_id ASC
+    </select>
+
+    <!-- カテゴリ管理用：自分のカテゴリのみ（Systemカテゴリを除く） -->
+    <select id="findByUserIdExcludingSystem" parameterType="int" resultType="com.example.budgetapp.model.Category">
+        SELECT *
+        FROM tb_mst_category
+        WHERE delete_flg = false
+          AND user_id = #{userId}
+        ORDER BY create_date
+    </select>
+
+</mapper>

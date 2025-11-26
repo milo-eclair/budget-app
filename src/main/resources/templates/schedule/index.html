@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>予定一覧</title>
+</head>
+<body>
+    <h1>予定一覧</h1>
+	<!--/* ログアウトボタンをクリックした際に /logout に対してPOSTメソッドでHTTPリクエストするためのフォーム。 */-->
+	<form method="post" th:action="@{/logout}">
+		<button type="submit">ログアウト</button>
+	</form>
+
+
+    <!-- 登録フォーム -->
+    <form th:action="@{/schedule/register}" method="post">
+        タイトル: <input type="text" name="scheduleTitle" placeholder="予定タイトル">
+        詳細: <input type="text" name="scheduleDetail" placeholder="詳細">
+        年月: <input type="text" name="scheduleYearMonth" placeholder="YYYY-MM">
+        日付: <input type="date" name="scheduleDate">
+        金額: <input type="number" name="scheduleAmount" placeholder="金額">
+        コメント: <input type="text" name="scheduleComment" placeholder="コメント">
+        カテゴリ: 
+        <select name="scheduleCategory">
+            <option value="">選択してください</option>
+            <option value="食費">食費</option>
+            <option value="娯楽">娯楽</option>
+            <option value="生活雑費">生活雑費</option>
+            <option value="その他">その他</option>
+        </select>
+        <button type="submit">登録</button>
+    </form>
+
+    <br>
+
+    <!-- 一覧表示 -->
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>タイトル</th>
+            <th>詳細</th>
+            <th>年月</th>
+            <th>日付</th>
+            <th>金額</th>
+            <th>コメント</th>
+            <th>カテゴリ</th>
+            <th>操作</th>
+        </tr>
+        <tr th:each="schedule : ${schedules}">
+            <td th:text="${schedule.scheduleId}"></td>
+            <td th:text="${schedule.scheduleTitle}"></td>
+            <td th:text="${schedule.scheduleDetail}"></td>
+            <td th:text="${schedule.scheduleYearMonth}"></td>
+            <td th:text="${schedule.scheduleDate}"></td>
+            <td th:text="${schedule.scheduleAmount}"></td>
+            <td th:text="${schedule.scheduleComment}"></td>
+            <td th:text="${schedule.scheduleCategory}"></td>
+            <td>
+                <a th:href="@{/schedule/edit(scheduleId=${schedule.scheduleId})}">編集</a> |
+                <form th:action="@{/schedule/delete}" method="post" style="display:inline">
+                    <input type="hidden" name="scheduleId" th:value="${schedule.scheduleId}">
+                    <button type="submit" onclick="return confirm('本当に削除しますか？');">削除</button>
+                </form>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

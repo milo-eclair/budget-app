@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.budgetapp.repository.mybatis.SpendingGraphMapper">
+
+    <!-- カテゴリ別支出合計を取得（削除済み支出は除外） -->
+    <select id="findSpendingByCategory" parameterType="map" resultType="com.example.budgetapp.model.SpendingGraph">
+        SELECT
+            CASE
+                WHEN c.category_name = 'その他' THEN 'その他'
+                ELSE c.category_name
+            END AS categoryName,
+            SUM(s.spending_amount) AS totalAmount
+        FROM tb_trn_spending s
+        JOIN tb_mst_category c ON s.category_id = c.category_id
+        WHERE s.user_id = #{userId}
+          AND s.spending_date BETWEEN #{startOfMonth} AND #{endOfMonth}
+          AND s.delete_flg = false   <!-- ここで削除済みを除外 -->
+        GROUP BY
+            CASE
+                WHEN c.category_name = 'その他' THEN 'その他'
+                ELSE c.category_name
+            END
+        ORDER BY totalAmount DESC
+    </select>
+
+</mapper>

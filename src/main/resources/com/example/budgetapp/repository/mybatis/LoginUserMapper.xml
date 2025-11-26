@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.budgetapp.repository.mybatis.LoginUserMapper">
+
+    <!-- ユーザーIDからログインユーザーを検索 -->
+    <select id="findByUserId" resultType="com.example.budgetapp.model.LoginUser">
+        SELECT
+            user_id,
+            user_name,
+            user_password,
+            user_email,
+            user_phone_number,
+            delete_flg,
+            create_user,
+            create_date,
+            update_user,
+            update_date
+        FROM
+            tb_mst_user_login
+        WHERE
+            user_id = #{userId}
+    </select>
+
+    <!-- ログインユーザーを登録 -->
+    <insert id="register">
+        INSERT INTO tb_mst_user_login (
+            user_name,
+            user_password,
+            user_email,
+            user_phone_number,
+            delete_flg,
+            create_user,
+            create_date,
+            update_user,
+            update_date
+        ) VALUES (
+            #{userName},
+            #{userPassword},
+            #{userEmail},
+            #{userPhoneNumber},
+            #{deleteFlg},
+            #{createUser},
+            #{createDate},
+            #{updateUser},
+            #{updateDate}
+        )
+    </insert>
+
+</mapper>

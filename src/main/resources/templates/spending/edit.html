@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>支出編集</title>
+</head>
+<body>
+    <h1>支出編集</h1>
+
+    <form th:action="@{/spending/update}" method="post">
+        <input type="hidden" name="spendingId" th:value="${spending.spendingId}">
+        予算ID: <input type="number" name="budgetId" th:value="${spending.budgetId}">
+        年月: <input type="text" name="budgetYearMonth" th:value="${spending.budgetYearMonth}">
+        日付: <input type="date" name="spendingDate" th:value="${spending.spendingDate}">
+        金額: <input type="number" name="spendingAmount" th:value="${spending.spendingAmount}">
+        コメント: <input type="text" name="spendingComment" th:value="${spending.spendingComment}">
+        カテゴリ:
+        <select name="spendingCategory" id="spendingCategory">
+            <option value="">選択してください</option>
+            <option value="食費" th:selected="${spending.spendingCategory=='食費'}">食費</option>
+            <option value="娯楽" th:selected="${spending.spendingCategory=='娯楽'}">娯楽</option>
+            <option value="生活雑費" th:selected="${spending.spendingCategory=='生活雑費'}">生活雑費</option>
+            <option value="その他" th:selected="${spending.spendingCategory!='食費' and spending.spendingCategory!='娯楽' and spending.spendingCategory!='生活雑費'}">その他</option>
+        </select>
+        <input type="text" name="otherCategory" id="otherCategory" th:value="${(spending.spendingCategory!='食費' and spending.spendingCategory!='娯楽' and spending.spendingCategory!='生活雑費') ? spending.spendingCategory : ''}" style="display:none;">
+        <button type="submit">更新</button>
+    </form>
+
+    <br>
+    <a th:href="@{/spending}">一覧に戻る</a>
+
+    <script>
+        const categorySelect = document.getElementById('spendingCategory');
+        const otherInput = document.getElementById('otherCategory');
+        function toggleOtherInput() {
+            if (categorySelect.value === 'その他') {
+                otherInput.style.display = 'inline';
+            } else {
+                otherInput.style.display = 'none';
+                otherInput.value = '';
+            }
+        }
+        categorySelect.addEventListener('change', toggleOtherInput);
+        toggleOtherInput(); // 初期表示用
+    </script>
+</body>
+</html>

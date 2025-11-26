@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>日表示カレンダー</title>
+    <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-white p-6">
+
+<div class="max-w-4xl mx-auto">
+
+    <!-- 年月表示と戻るボタン -->
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-semibold text-gray-800" th:text="${selectedDate}">2025-10-15</h2>
+        <!-- 修正: 年月を渡すように変更 -->
+        <a th:href="@{'/calendar/' + ${year} + '/' + ${month}}"
+           class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            カレンダーに戻る
+        </a>
+    </div>
+
+    <!-- 支出セクション -->
+    <div class="mb-6">
+        <div class="flex justify-between items-center mb-2">
+            <h3 class="text-xl font-bold text-gray-700">
+                支出合計:
+                <span th:text="${totalSpending != null ? totalSpending + '円' : '--'}">--</span>
+            </h3>
+            <div class="flex items-center gap-2">
+                <button onclick="openModal('categoryModal')" class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+                    カテゴリ登録
+                </button>
+                <button onclick="openModal('spendingModal')" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                    支出登録
+                </button>
+            </div>
+        </div>
+        <table class="w-full table-auto border border-gray-300">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2 border">カテゴリ</th>
+                    <th class="px-4 py-2 border">金額</th>
+                    <th class="px-4 py-2 border">コメント</th>
+                    <th class="px-4 py-2 border w-24">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="expense : ${expenses}">
+                    <td class="px-4 py-2 border" th:text="${expense.customCategoryName != null && expense.customCategoryName != '' ? expense.customCategoryName : expense.categoryName}"></td>
+                    <td class="px-4 py-2 border" th:text="${expense.amount != null ? expense.amount + '円' : '--'}"></td>
+                    <td class="px-4 py-2 border" th:text="${expense.memo}"></td>
+                    <td class="px-2 py-1 border text-center">
+                        <button type="button"
+                                class="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600"
+                                th:data-id="${expense.spendingId}"
+                                th:data-category="${expense.categoryId}"
+                                th:data-category-name="${expense.categoryName}"
+                                th:data-custom-category-name="${expense.customCategoryName}"
+                                th:data-amount="${expense.amount}"
+                                th:data-memo="${expense.memo}"
+                                onclick="openEditSpendingModal(this)">
+                            修正
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 予定セクション -->
+    <div class="mb-6">
+        <div class="flex justify-between items-center mb-2">
+            <h3 class="text-xl font-bold text-gray-700">予定一覧</h3>
+            <button onclick="openModal('scheduleModal')" class="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600">
+                予定登録
+            </button>
+        </div>
+        <table class="w-full table-auto border border-gray-300">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2 border w-1/3">タイトル</th>
+                    <th class="px-4 py-2 border w-1/6">金額</th>
+                    <th class="px-4 py-2 border w-1/3">詳細</th>
+                    <th class="px-4 py-2 border w-24">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="schedule : ${schedules}">
+                    <td class="px-4 py-2 border" th:text="${schedule.scheduleTitle}"></td>
+                    <td class="px-4 py-2 border" th:text="${schedule.scheduleAmount != null ? schedule.scheduleAmount + '円' : '--'}"></td>
+                    <td class="px-4 py-2 border" th:text="${schedule.scheduleMemo}"></td>
+                    <td class="px-2 py-1 border text-center">
+                        <button type="button"
+                                class="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600"
+                                th:data-id="${schedule.scheduleId}"
+                                th:data-title="${schedule.scheduleTitle}"
+                                th:data-start="${schedule.scheduleStartDate}"
+                                th:data-end="${schedule.scheduleEndDate}"
+                                th:data-amount="${schedule.scheduleAmount}"
+                                th:data-memo="${schedule.scheduleMemo}"
+                                onclick="openEditModal(this)">
+                            修正
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- 支出登録モーダル -->
+<div id="spendingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+        <h2 class="text-xl font-bold mb-4">支出登録フォーム</h2>
+        <form th:action="@{/spending/register}" method="post" class="space-y-4">
+            <input type="hidden" name="spendingDate" th:value="${selectedDate}">
+            <input type="hidden" name="loginUserName" th:value="${loginUserName}">
+            <div>
+                <label class="block font-semibold mb-1">カテゴリ</label>
+                <select name="categoryId" id="categorySelect" required class="w-full border rounded px-3 py-2" onchange="toggleOtherInput(this)">
+                    <option value="" selected disabled>選択してください</option>
+                    <th:block th:each="category : ${categoryList}">
+                        <option th:value="${category.categoryId}" th:text="${category.categoryName}"></option>
+                    </th:block>
+                </select>
+                <div id="otherCategoryDiv" class="hidden mt-2">
+                    <input type="text" name="otherCategory" placeholder="カテゴリ名を入力" class="w-full border rounded px-3 py-2">
+                </div>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">金額</label>
+                <input type="number" name="amount" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">コメント</label>
+                <textarea name="memo" class="w-full border rounded px-3 py-2"></textarea>
+            </div>
+            <div class="flex justify-between mt-4">
+                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">支出登録</button>
+                <button type="button" onclick="closeModal('spendingModal')" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">キャンセル</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 支出編集モーダル -->
+<div id="editSpendingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+        <h2 class="text-xl font-bold mb-4">支出修正フォーム</h2>
+        <form th:action="@{/spending/update}" method="post" id="editSpendingForm" class="space-y-4">
+            <input type="hidden" name="spendingId" id="editSpendingId">
+            <input type="hidden" name="spendingDate" th:value="${selectedDate}">
+            <input type="hidden" name="loginUserName" th:value="${loginUserName}">
+            <div>
+                <label class="block font-semibold mb-1">カテゴリ</label>
+                <select name="categoryId" id="editCategorySelect" required class="w-full border rounded px-3 py-2" onchange="toggleEditOtherInput(this)">
+                    <option value="" selected disabled>選択してください</option>
+                    <th:block th:each="category : ${categoryList}">
+                        <option th:value="${category.categoryId}" th:text="${category.categoryName}"></option>
+                    </th:block>
+                </select>
+                <div id="editOtherCategoryDiv" class="hidden mt-2">
+                    <input type="text" name="otherCategory" id="editOtherCategoryInput" placeholder="カテゴリ名を入力" class="w-full border rounded px-3 py-2">
+                </div>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">金額</label>
+                <input type="number" name="amount" id="editSpendingAmount" class="w-full border rounded px-3 py-2" required>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">コメント</label>
+                <textarea name="memo" id="editSpendingMemo" class="w-full border rounded px-3 py-2"></textarea>
+            </div>
+            <div class="flex justify-between mt-4">
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">更新</button>
+                <button type="button" onclick="submitDeleteSpending()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">削除</button>
+                <button type="button" onclick="closeModal('editSpendingModal')" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">キャンセル</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 以下カテゴリ管理・予定関連モーダルも元コード通りに残す -->
+
+<!-- カテゴリ管理モーダル -->
+<div id="categoryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96 max-h-[80vh] overflow-y-auto">
+        <h2 class="text-xl font-bold mb-4">カテゴリ管理</h2>
+
+        <!-- カテゴリ登録フォーム -->
+        <form th:action="@{/category/register}" method="post" class="space-y-4">
+            <input type="hidden" name="loginUserName" th:value="${loginUserName}">
+            <input type="hidden" name="date" th:value="${selectedDate}">
+            <div>
+                <label class="block font-semibold mb-1">カテゴリ名</label>
+                <input type="text" name="categoryName" class="w-full border rounded px-3 py-2" placeholder="例: 交通費" required>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">登録</button>
+            </div>
+        </form>
+
+        <hr class="my-4">
+
+        <!-- 登録済みカテゴリ一覧（Systemカテゴリを除外） -->
+        <h3 class="text-lg font-semibold mb-2">既存カテゴリ</h3>
+
+        <!-- 削除用フォーム -->
+        <form th:action="@{/category/delete}" method="post" id="deleteCategoryForm">
+            <input type="hidden" name="categoryId" id="deleteCategoryId">
+            <input type="hidden" name="loginUserName" th:value="${loginUserName}">
+            <input type="hidden" name="date" th:value="${selectedDate}">
+        </form>
+
+        <ul>
+            <li th:each="category : ${categoryList}" 
+                th:if="${category.userId != 1}" 
+                class="flex justify-between items-center mb-2">
+                <span th:text="${category.categoryName}"></span>
+                <button type="button"
+                        class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                        th:data-id="${category.categoryId}"
+                        th:data-name="${category.categoryName}"
+                        onclick="confirmDelete(this)">
+                    削除
+                </button>
+            </li>
+        </ul>
+
+        <div class="flex justify-end mt-4">
+            <button type="button" onclick="closeModal('categoryModal')" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">閉じる</button>
+        </div>
+    </div>
+</div>
+
+<!-- 予定登録モーダル -->
+<div id="scheduleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+        <h2 class="text-xl font-bold mb-4">予定登録フォーム</h2>
+        <form th:action="@{/schedule/register}" method="post" class="space-y-4">
+            <input type="hidden" name="loginUserName" th:value="${loginUserName}">
+            <input type="hidden" name="date" th:value="${selectedDate}">
+            <div>
+                <label class="block font-semibold mb-1">タイトル</label>
+                <input type="text" name="scheduleTitle" required class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">開始日</label>
+                <input type="date" name="scheduleStartDate" th:value="${selectedDate}" required class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">終了日</label>
+                <input type="date" name="scheduleEndDate" th:value="${selectedDate}" required class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">金額</label>
+                <input type="number" name="scheduleAmount" required class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">詳細</label>
+                <textarea name="scheduleMemo" class="w-full border rounded px-3 py-2"></textarea>
+            </div>
+            <div class="flex justify-between mt-4">
+                <button type="submit" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">登録</button>
+                <button type="button" onclick="closeModal('scheduleModal')" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">キャンセル</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 予定編集モーダル -->
+<div id="editScheduleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+        <h2 class="text-xl font-bold mb-4">予定修正フォーム</h2>
+        <form th:action="@{/schedule/update}" method="post" id="editScheduleForm" class="space-y-4">
+            <input type="hidden" name="scheduleId" id="editScheduleId">
+            <input type="hidden" name="date" id="editScheduleSelectedDate" th:value="${selectedDate}">
+            <div>
+                <label class="block font-semibold mb-1">タイトル</label>
+                <input type="text" name="scheduleTitle" id="editScheduleTitle" required class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">開始日</label>
+                <input type="date" name="scheduleStartDate" id="editScheduleStartDate" required class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">終了日</label>
+                <input type="date" name="scheduleEndDate" id="editScheduleEndDate" required class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">金額</label>
+                <input type="number" name="scheduleAmount" id="editScheduleAmount" class="w-full border rounded px-3 py-2">
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">詳細</label>
+                <textarea name="scheduleMemo" id="editScheduleMemo" class="w-full border rounded px-3 py-2"></textarea>
+            </div>
+            <div class="flex justify-between mt-4">
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">更新</button>
+                <button type="button" onclick="submitDelete()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">削除</button>
+                <button type="button" onclick="closeModal('editScheduleModal')" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">キャンセル</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+function closeModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+// 支出登録モーダルで「その他」の場合のみ入力欄表示
+function toggleOtherInput(select) {
+    const otherDiv = document.getElementById('otherCategoryDiv');
+    const selectedText = select.options[select.selectedIndex].text;
+    otherDiv.classList.toggle('hidden', selectedText !== 'その他');
+}
+
+// 支出編集モーダルで「その他」の場合のみ入力欄表示
+function toggleEditOtherInput(select) {
+    const otherDiv = document.getElementById('editOtherCategoryDiv');
+    const input = document.getElementById('editOtherCategoryInput');
+    const selectedText = select.options[select.selectedIndex].text;
+    otherDiv.classList.toggle('hidden', selectedText !== 'その他');
+    if (selectedText !== 'その他') input.value = '';
+}
+
+// 支出編集モーダルを開く
+function openEditSpendingModal(button){
+    document.getElementById('editSpendingId').value = button.dataset.id || "";
+    document.getElementById('editCategorySelect').value = button.dataset.category || "";
+    document.getElementById('editSpendingAmount').value = button.dataset.amount || "";
+    document.getElementById('editSpendingMemo').value = button.dataset.memo || "";
+
+    const otherDiv = document.getElementById('editOtherCategoryDiv');
+    const input = document.getElementById('editOtherCategoryInput');
+    const customName = button.dataset.customCategoryName || "";
+    if(customName){
+        otherDiv.classList.remove('hidden');
+        input.value = customName;
+    } else {
+        otherDiv.classList.add('hidden');
+        input.value = '';
+    }
+
+    openModal('editSpendingModal');
+}
+
+// 支出削除
+function submitDeleteSpending(){
+    if(confirm('この支出を削除しますか？')){
+        const form = document.getElementById('editSpendingForm');
+        form.setAttribute('action', '/spending/delete');
+        form.submit();
+    }
+}
+
+// カテゴリ削除
+function confirmDelete(button){
+    if(confirm('カテゴリ「' + button.dataset.name + '」を削除しますか？')){
+        document.getElementById('deleteCategoryId').value = button.dataset.id;
+        document.getElementById('deleteCategoryForm').submit();
+    }
+}
+
+// 予定編集モーダルを開く
+function openEditModal(button){
+    document.getElementById('editScheduleId').value = button.dataset.id || "";
+    document.getElementById('editScheduleTitle').value = button.dataset.title || "";
+    document.getElementById('editScheduleStartDate').value = button.dataset.start || "";
+    document.getElementById('editScheduleEndDate').value = button.dataset.end || "";
+    document.getElementById('editScheduleAmount').value = button.dataset.amount || "";
+    document.getElementById('editScheduleMemo').value = button.dataset.memo || "";
+    openModal('editScheduleModal');
+}
+
+// 予定削除
+function submitDelete(){
+    if(confirm('この予定を削除しますか？')){
+        const form = document.getElementById('editScheduleForm');
+        form.setAttribute('action', '/schedule/delete');
+        form.submit();
+    }
+}
+</script>
+
+</body>
+</html>

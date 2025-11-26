@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>予定編集</title>
+</head>
+<body>
+    <h1>予定編集</h1>
+
+    <form th:action="@{/schedule/update}" method="post">
+        <input type="hidden" name="scheduleId" th:value="${schedule.scheduleId}">
+        タイトル: <input type="text" name="scheduleTitle" th:value="${schedule.scheduleTitle}">
+        詳細: <input type="text" name="scheduleDetail" th:value="${schedule.scheduleDetail}">
+        年月: <input type="text" name="scheduleYearMonth" th:value="${schedule.scheduleYearMonth}">
+        日付: <input type="date" name="scheduleDate" th:value="${schedule.scheduleDate}">
+        金額: <input type="number" name="scheduleAmount" th:value="${schedule.scheduleAmount}">
+        コメント: <input type="text" name="scheduleComment" th:value="${schedule.scheduleComment}">
+        カテゴリ:
+        <select name="scheduleCategory" th:value="${schedule.scheduleCategory}">
+            <option value="">選択してください</option>
+            <option value="食費" th:selected="${schedule.scheduleCategory=='食費'}">食費</option>
+            <option value="娯楽" th:selected="${schedule.scheduleCategory=='娯楽'}">娯楽</option>
+            <option value="生活雑費" th:selected="${schedule.scheduleCategory=='生活雑費'}">生活雑費</option>
+            <option value="その他" th:selected="${schedule.scheduleCategory=='その他'}">その他</option>
+        </select>
+        <button type="submit">更新</button>
+    </form>
+
+    <br>
+    <a th:href="@{/schedule}">一覧に戻る</a>
+</body>
+</html>

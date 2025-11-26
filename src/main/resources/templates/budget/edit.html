@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>予算編集</title>
+</head>
+<body>
+    <h1>予算編集</h1>
+
+    <form th:action="@{/budget/update}" method="post">
+        <input type="hidden" name="budgetId" th:value="${budget.budgetId}">
+        <input type="hidden" name="loginUserName" th:value="${#authentication.name}">
+        <!-- LocalDate対応 -->
+        年月: <input type="month" name="budgetMonth"
+                     th:value="${budget.budgetMonth != null ? budget.budgetMonth.format(T(java.time.format.DateTimeFormatter).ofPattern('yyyy-MM')) : ''}">
+        金額: <input type="number" name="budgetAmount" th:value="${budget.budgetAmount}">
+        <button type="submit">更新</button>
+    </form>
+
+    <br>
+    <a th:href="@{/budget}">一覧に戻る</a>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.budgetapp.repository.mybatis.BudgetMapper">
+
+    <select id="findAll" resultType="com.example.budgetapp.model.Budget">
+        SELECT budget_id,
+               budget_month,
+               budget_amount,
+               user_id,
+               delete_flg,
+               create_user,
+               create_date,
+               update_user,
+               update_date
+        FROM tb_trn_budget
+        WHERE delete_flg = false
+    </select>
+
+    <select id="findById" resultType="com.example.budgetapp.model.Budget">
+        SELECT budget_id,
+               budget_month,
+               budget_amount,
+               user_id,
+               delete_flg,
+               create_user,
+               create_date,
+               update_user,
+               update_date
+        FROM tb_trn_budget
+        WHERE budget_id = #{budgetId} AND delete_flg = false
+    </select>
+
+    <insert id="insert">
+        INSERT INTO tb_trn_budget (
+            budget_month, budget_amount, user_id,
+            delete_flg, create_user, create_date, update_user, update_date
+        ) VALUES (
+            #{budgetMonth}, #{budgetAmount}, #{userId},
+            false, #{createUser}, CURRENT_TIMESTAMP, #{updateUser}, CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE tb_trn_budget
+        SET budget_month = #{budgetMonth},
+            budget_amount = #{budgetAmount},
+            update_user = #{updateUser},
+            update_date = CURRENT_TIMESTAMP
+        WHERE budget_id = #{budgetId}
+    </update>
+
+    <update id="logicalDelete">
+        UPDATE tb_trn_budget
+        SET delete_flg = true,
+            update_user = #{updateUser},
+            update_date = CURRENT_TIMESTAMP
+        WHERE budget_id = #{budgetId}
+    </update>
+
+    <!-- 年月とユーザーで予算を取得 -->
+    <select id="findByUserIdAndMonth" resultType="com.example.budgetapp.model.Budget">
+        SELECT budget_id,
+               budget_month,
+               budget_amount,
+               user_id,
+               delete_flg,
+               create_user,
+               create_date,
+               update_user,
+               update_date
+        FROM tb_trn_budget
+        WHERE user_id = #{userId} 
+          AND budget_month = #{budgetMonth} 
+          AND delete_flg = false
+    </select>
+
+</mapper>

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.budgetapp.repository.mybatis.ScheduleMapper">
+
+    <!-- 有効な予定すべてを取得 -->
+    <select id="findAll" resultType="com.example.budgetapp.model.Schedule">
+      <![CDATA[
+        SELECT schedule_id,
+               schedule_title,
+               schedule_startDate,
+               schedule_endDate,
+               schedule_amount,
+               schedule_memo,
+               user_id,
+               delete_flg,
+               create_user,
+               create_date,
+               update_user,
+               update_date
+        FROM tb_trn_schedule
+        WHERE delete_flg = false
+        ORDER BY schedule_startDate ASC
+      ]]>
+    </select>
+
+    <!-- IDで1件取得 -->
+    <select id="findById" resultType="com.example.budgetapp.model.Schedule">
+      <![CDATA[
+        SELECT schedule_id,
+               schedule_title,
+               schedule_startDate,
+               schedule_endDate,
+               schedule_amount,
+               schedule_memo,
+               user_id,
+               delete_flg,
+               create_user,
+               create_date,
+               update_user,
+               update_date
+        FROM tb_trn_schedule
+        WHERE schedule_id = #{scheduleId}
+          AND delete_flg = false
+      ]]>
+    </select>
+
+    <!-- 予定を登録 -->
+    <insert id="insert">
+      <![CDATA[
+        INSERT INTO tb_trn_schedule (
+            schedule_title,
+            schedule_startDate,
+            schedule_endDate,
+            schedule_amount,
+            schedule_memo,
+            user_id,
+            delete_flg,
+            create_user,
+            create_date,
+            update_user,
+            update_date
+        ) VALUES (
+            #{scheduleTitle},
+            #{scheduleStartDate},
+            #{scheduleEndDate},
+            #{scheduleAmount},
+            #{scheduleMemo},
+            #{userId},
+            false,
+            #{createUser},
+            CURRENT_TIMESTAMP,
+            #{updateUser},
+            CURRENT_TIMESTAMP
+        )
+      ]]>
+    </insert>
+
+    <!-- 予定を更新 -->
+    <update id="update">
+      <![CDATA[
+        UPDATE tb_trn_schedule
+        SET schedule_title = #{scheduleTitle},
+            schedule_startDate = #{scheduleStartDate},
+            schedule_endDate = #{scheduleEndDate},
+            schedule_amount = #{scheduleAmount},
+            schedule_memo = #{scheduleMemo},
+            update_user = #{updateUser},
+            update_date = CURRENT_TIMESTAMP
+        WHERE schedule_id = #{scheduleId}
+      ]]>
+    </update>
+
+    <!-- 論理削除 -->
+    <update id="logicalDelete">
+      <![CDATA[
+        UPDATE tb_trn_schedule
+        SET delete_flg = true,
+            update_user = #{updateUser},
+            update_date = CURRENT_TIMESTAMP
+        WHERE schedule_id = #{scheduleId}
+      ]]>
+    </update>
+
+    <!-- 指定ユーザー・日付の予定を取得 -->
+    <select id="findByUserIdAndDate" resultType="com.example.budgetapp.model.Schedule">
+      <![CDATA[
+        SELECT schedule_id,
+               schedule_title,
+               schedule_startDate,
+               schedule_endDate,
+               schedule_amount,
+               schedule_memo,
+               user_id,
+               delete_flg,
+               create_user,
+               create_date,
+               update_user,
+               update_date
+        FROM tb_trn_schedule
+        WHERE user_id = #{userId}
+          AND schedule_startDate <= #{targetDate}
+          AND schedule_endDate >= #{targetDate}
+          AND delete_flg = false
+        ORDER BY schedule_startDate ASC
+      ]]>
+    </select>
+
+    <!-- 月表示カレンダー用: 指定ユーザー・期間内の予定を取得 -->
+    <select id="findByUserIdAndDateRange" resultType="com.example.budgetapp.model.Schedule">
+      <![CDATA[
+        SELECT schedule_id,
+               schedule_title,
+               schedule_startDate,
+               schedule_endDate,
+               schedule_amount,
+               schedule_memo,
+               user_id,
+               delete_flg,
+               create_user,
+               create_date,
+               update_user,
+               update_date
+        FROM tb_trn_schedule
+        WHERE user_id = #{userId}
+          AND schedule_startDate <= #{endDate}
+          AND schedule_endDate >= #{startDate}
+          AND delete_flg = false
+        ORDER BY schedule_startDate ASC
+      ]]>
+    </select>
+
+</mapper>

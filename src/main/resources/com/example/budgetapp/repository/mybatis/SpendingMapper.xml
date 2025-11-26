@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.budgetapp.repository.mybatis.SpendingMapper">
+
+    <resultMap id="SpendingResultMap" type="com.example.budgetapp.model.Spending">
+        <id property="spendingId" column="spending_id" />
+        <result property="amount" column="spending_amount" />
+        <result property="spendingDate" column="spending_date" />
+        <result property="memo" column="spending_memo" />
+        <result property="userId" column="user_id" />
+        <result property="categoryId" column="category_id" />
+        <result property="deleteFlg" column="delete_flg" />
+        <result property="createUser" column="create_user" />
+        <result property="createDate" column="create_date" />
+        <result property="updateUser" column="update_user" />
+        <result property="updateDate" column="update_date" />
+        <result property="customCategoryName" column="custom_category_name" />
+    </resultMap>
+
+    <select id="findById" parameterType="int" resultMap="SpendingResultMap">
+        SELECT * FROM tb_trn_spending
+        WHERE spending_id = #{spendingId} AND delete_flg = false
+    </select>
+
+    <select id="findByUserIdAndDate" parameterType="map" resultMap="SpendingResultMap">
+        SELECT * FROM tb_trn_spending
+        WHERE user_id = #{userId} AND spending_date = #{spendingDate} AND delete_flg = false
+        ORDER BY spending_date ASC
+    </select>
+
+    <insert id="insert" parameterType="com.example.budgetapp.model.Spending">
+        INSERT INTO tb_trn_spending
+        (spending_amount, spending_date, spending_memo, user_id, category_id,
+         custom_category_name, create_user, update_user)
+        VALUES
+        (#{amount}, #{spendingDate}, #{memo}, #{userId}, #{categoryId},
+         #{customCategoryName,jdbcType=VARCHAR}, #{createUser}, #{updateUser})
+    </insert>
+
+    <update id="update" parameterType="com.example.budgetapp.model.Spending">
+        UPDATE tb_trn_spending
+        SET spending_amount = #{amount},
+            spending_date = #{spendingDate},
+            spending_memo = #{memo},
+            category_id = #{categoryId},
+            custom_category_name = #{customCategoryName,jdbcType=VARCHAR},
+            update_user = #{updateUser},
+            update_date = CURRENT_TIMESTAMP
+        WHERE spending_id = #{spendingId}
+    </update>
+
+    <update id="logicalDelete">
+        UPDATE tb_trn_spending
+        SET delete_flg = true,
+            update_user = #{updateUser},
+            update_date = CURRENT_TIMESTAMP
+        WHERE spending_id = #{spendingId}
+    </update>
+
+    <select id="findCategoriesForUser" parameterType="int" resultType="com.example.budgetapp.model.Category">
+        SELECT *
+        FROM tb_mst_category
+        WHERE user_id = 1 OR user_id = #{userId}
+        ORDER BY
+            CASE 
+                WHEN category_name = '食費' THEN 1
+                WHEN category_name = '生活雑費' THEN 2
+                WHEN user_id = #{userId} THEN 3
+                WHEN category_name = 'その他' THEN 4
+                ELSE 5
+            END,
+            category_id ASC
+    </select>
+
+    <!-- 🧩 追加: 指定月の支出合計金額を取得 -->
+    <select id="findMonthlyTotal" parameterType="map" resultType="int">
+        SELECT COALESCE(SUM(spending_amount), 0)
+        FROM tb_trn_spending
+        WHERE user_id = #{userId}
+          AND spending_date BETWEEN #{startDate} AND #{endDate}
+          AND delete_flg = false
+    </select>
+
+    <!-- 🧩 追加: 指定月の予算金額を取得 -->
+    <select id="findMonthlyBudget" parameterType="map" resultType="int">
+        SELECT COALESCE(budget_amount, 0)
+        FROM tb_trn_budget
+        WHERE user_id = #{userId}
+          AND EXTRACT(YEAR FROM budget_month) = #{year}
+          AND EXTRACT(MONTH FROM budget_month) = #{month}
+    </select>
+
+</mapper>

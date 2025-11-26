@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>サインイン</title>
+    <link rel="stylesheet" href="/css/output.css">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- サインインフォームカード -->
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <!-- タイトル -->
+        <h1 class="text-4xl font-bold text-gray-800 text-center mb-6">サインイン</h1>
+
+        <!-- 登録フォーム -->
+        <form method="post" th:action="@{/signin}" th:object="${createLoginUserForm}" class="space-y-4">
+            
+            <!-- ユーザー名 -->
+            <div>
+                <label for="user-name" class="block text-gray-700 font-semibold mb-1">ユーザー名</label>
+                <input id="user-name" type="text" th:field="*{userName}" placeholder="ユーザー名"
+                       class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"/>
+                <span th:if="${#fields.hasErrors('userName')}" th:errors="*{userName}" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- パスワード -->
+            <div>
+                <label for="password" class="block text-gray-700 font-semibold mb-1">パスワード</label>
+                <input id="password" type="password" th:field="*{password}" placeholder="パスワード"
+                       class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"/>
+                <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- メールアドレス -->
+            <div>
+                <label for="user-email" class="block text-gray-700 font-semibold mb-1">Email</label>
+                <input id="user-email" type="email" th:field="*{userEmail}" placeholder="Email"
+                       class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"/>
+                <span th:if="${#fields.hasErrors('userEmail')}" th:errors="*{userEmail}" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- 電話番号 -->
+            <div>
+                <label for="user-phone" class="block text-gray-700 font-semibold mb-1">電話番号</label>
+                <input id="user-phone" type="text" th:field="*{userPhoneNumber}" placeholder="電話番号"
+                       class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"/>
+                <span th:if="${#fields.hasErrors('userPhoneNumber')}" th:errors="*{userPhoneNumber}" class="text-red-500 text-sm"></span>
+            </div>
+
+            <!-- 登録ボタン -->
+            <button type="submit"
+                    class="w-full bg-blue-500 text-white font-bold py-2 rounded hover:bg-blue-600 transition-colors duration-200">
+                登録
+            </button>
+        </form>
+
+        <!-- ホームに戻るリンク -->
+        <p class="text-center text-gray-600 text-sm mt-4">
+            <a th:href="@{/}" class="hover:underline text-blue-500">ホームに戻る</a>
+        </p>
+    </div>
+
+</body>
+</html>

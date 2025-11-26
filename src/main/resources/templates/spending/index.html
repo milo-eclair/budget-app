@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>支出一覧</title>
+</head>
+<body>
+    <h1>支出一覧</h1>
+	<!--/* ログアウトボタンをクリックした際に /logout に対してPOSTメソッドでHTTPリクエストするためのフォーム。 */-->
+	<form method="post" th:action="@{/logout}">
+		<button type="submit">ログアウト</button>
+	</form>
+
+
+
+    <!-- 登録フォーム -->
+    <form th:action="@{/spending/register}" method="post">
+        予算ID: <input type="number" name="budgetId" placeholder="対応する予算ID">
+        年月: <input type="text" name="budgetYearMonth" placeholder="YYYY-MM">
+        日付: <input type="date" name="spendingDate">
+        金額: <input type="number" name="spendingAmount" placeholder="金額">
+        コメント: <input type="text" name="spendingComment" placeholder="コメント">
+        カテゴリ: 
+        <select name="spendingCategory" id="spendingCategory">
+            <option value="">選択してください</option>
+            <option value="食費">食費</option>
+            <option value="娯楽">娯楽</option>
+            <option value="生活雑費">生活雑費</option>
+            <option value="その他">その他</option>
+        </select>
+        <input type="text" name="otherCategory" id="otherCategory" placeholder="その他カテゴリ" style="display:none;">
+        <button type="submit">登録</button>
+    </form>
+
+    <br>
+
+    <!-- 一覧表示 -->
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>予算ID</th>
+            <th>年月</th>
+            <th>日付</th>
+            <th>金額</th>
+            <th>コメント</th>
+            <th>カテゴリ</th>
+            <th>操作</th>
+        </tr>
+        <tr th:each="spending : ${spendings}">
+            <td th:text="${spending.spendingId}"></td>
+            <td th:text="${spending.budgetId}"></td>
+            <td th:text="${spending.budgetYearMonth}"></td>
+            <td th:text="${spending.spendingDate}"></td>
+            <td th:text="${spending.spendingAmount}"></td>
+            <td th:text="${spending.spendingComment}"></td>
+            <td th:text="${spending.spendingCategory}"></td>
+            <td>
+                <a th:href="@{/spending/edit(spendingId=${spending.spendingId})}">編集</a> |
+                <form th:action="@{/spending/delete}" method="post" style="display:inline">
+                    <input type="hidden" name="spendingId" th:value="${spending.spendingId}">
+                    <button type="submit" onclick="return confirm('本当に削除しますか？');">削除</button>
+                </form>
+            </td>
+        </tr>
+    </table>
+
+    <script>
+        const categorySelect = document.getElementById('spendingCategory');
+        const otherInput = document.getElementById('otherCategory');
+        categorySelect.addEventListener('change', function() {
+            if (this.value === 'その他') {
+                otherInput.style.display = 'inline';
+            } else {
+                otherInput.style.display = 'none';
+                otherInput.value = '';
+            }
+        });
+    </script>
+</body>
+</html>

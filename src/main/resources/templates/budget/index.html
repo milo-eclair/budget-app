@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>予算登録ポップアップ</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+    <!-- ポップアップ背景 -->
+    <div id="budgetModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <!-- モーダル本体 -->
+        <div class="bg-white rounded-xl shadow-lg w-96 p-6 relative">
+
+            <!-- 閉じるボタン -->
+            <button onclick="closeModal()"
+                    class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl font-bold">&times;</button>
+
+            <!-- モーダルタイトル -->
+            <h2 class="text-2xl font-bold mb-4 text-center">予算登録</h2>
+
+            <!-- 年月表示 -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-1">対象年月</label>
+                <span class="block text-gray-900" th:text="${year} + '年' + ${month} + '月'"></span>
+            </div>
+
+            <!-- 予算入力欄 -->
+            <form th:action="@{/budget/register}" method="post" class="space-y-4">
+                <input type="hidden" name="loginUserName" th:value="${#authentication.name}">
+                <!-- 追加: どの月の予算かを送信 -->
+                <input type="hidden" name="budgetMonth" th:value="${year} + '-' + (${month} < 10 ? '0' + ${month} : ${month})}">
+
+                <div>
+                    <label for="budgetAmount" class="block text-gray-700 font-semibold mb-1">予算入力</label>
+                    <input id="budgetAmount" type="number" name="budgetAmount" placeholder="金額を入力"
+                           class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                           required>
+                </div>
+
+                <!-- ボタン群 -->
+                <div class="flex justify-between mt-6">
+                    <!-- 登録ボタン -->
+                    <button type="submit"
+                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200">
+                        登録
+                    </button>
+
+                    <!-- カレンダーに戻る -->
+                    <button type="button" onclick="closeModal()"
+                            class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition-colors duration-200">
+                        カレンダーに戻る
+                    </button>
+
+                    <!-- 修正ボタン（条件付き表示） -->
+                    <button type="button" th:if="${existingBudget != null}"
+                            class="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500 transition-colors duration-200"
+                            onclick="editBudget()">
+                        修正
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 予算登録ボタン（カレンダー画面等で押す想定） -->
+    <button onclick="openModal()"
+            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-200">
+        予算登録
+    </button>
+
+    <script>
+        function openModal() {
+            document.getElementById('budgetModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('budgetModal').classList.add('hidden');
+        }
+
+        function editBudget() {
+            alert("既存予算の修正処理をここに実装してください");
+        }
+    </script>
+</body>
+</html>

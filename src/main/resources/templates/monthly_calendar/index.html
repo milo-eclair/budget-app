@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>月表示カレンダー</title>
+    <link rel="stylesheet" href="/css/output.css">
+    <style>
+        /* スマホでもスクロールバーを表示 */
+        .scrollbar-visible::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scrollbar-visible::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<div class="max-w-6xl mx-auto p-6">
+
+    <!-- ヘッダー -->
+    <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-800"
+            th:text="${year} + '年' + ${month} + '月のカレンダー'"></h2>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                ログアウト
+            </button>
+        </form>
+    </div>
+
+    <!-- 予算情報カード -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow text-center">
+            <p class="font-semibold text-gray-700 mb-2">目標予算</p>
+            <p class="text-2xl font-bold text-gray-800"
+               th:text="${budgetAmount != null ? budgetAmount + '円' : '--'}"></p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow text-center">
+            <p class="font-semibold text-gray-700 mb-2">支出合計</p>
+            <p class="text-2xl font-bold text-gray-800"
+               th:text="${totalSpending != null ? totalSpending + '円' : '--'}"></p>
+        </div>
+        <div class="bg-white p-6 rounded-lg text-center shadow">
+            <p class="font-semibold text-gray-700 mb-2">残り予算</p>
+            <p class="text-2xl font-bold text-gray-800"
+               th:text="${remainingBudget != null ? remainingBudget + '円' : '--'}"></p>
+        </div>
+    </div>
+
+    <!-- 操作ボタン -->
+    <div class="flex flex-wrap gap-4 justify-center mb-8">
+        <a th:href="@{'/calendar/' + ${prevYear} + '/' + ${prevMonth}}"
+           class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">前月</a>
+        <a th:href="@{'/calendar/' + ${nextYear} + '/' + ${nextMonth}}"
+           class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">次月</a>
+
+        <button type="button"
+                th:if="${!existingBudget}"
+                onclick="openBudgetForm()"
+                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+            予算登録
+        </button>
+        <button type="button"
+                th:if="${existingBudget}"
+                onclick="openBudgetForm()"
+                class="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500">
+            予算修正
+        </button>
+
+        <a th:href="@{'/graph/' + ${year} + '/' + ${month}}"
+           class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">支出グラフ</a>
+    </div>
+
+    <!-- 曜日ヘッダー -->
+    <div class="grid grid-cols-7 text-center bg-gray-200 rounded-t-lg overflow-hidden">
+        <div class="p-2">日</div>
+        <div class="p-2">月</div>
+        <div class="p-2">火</div>
+        <div class="p-2">水</div>
+        <div class="p-2">木</div>
+        <div class="p-2">金</div>
+        <div class="p-2">土</div>
+    </div>
+
+    <!-- カレンダー日付セル -->
+    <div class="grid gap-1 bg-white rounded-b-lg shadow">
+        <div th:each="week : ${calendarWeeks}" class="grid grid-cols-7 gap-1">
+            <div th:each="day : ${week}">
+                <div th:if="${day != null}" class="calendar-cell aspect-square flex flex-col border rounded p-2 bg-white">
+
+                    <!-- 日付（左上） -->
+                    <div class="mb-1">
+                        <a th:href="@{/daily_calendar(date=${year + '-' + (month < 10 ? '0' + month : month) + '-' + (day.date < 10 ? '0' + day.date : day.date)})}">
+                            <button th:text="${day.date}"
+                                    th:classappend="${day.isHoliday} ? ' bg-green-500 text-white' : (${day.isWeekend} ? ' bg-red-500 text-white' : ' bg-blue-500 text-white')"
+                                    class="w-7 h-7 rounded-full hover:brightness-90 text-lg sm:text-base">
+                            </button>
+                        </a>
+                    </div>
+
+                    <!-- 日ごとの総合計表示（レスポンシブ文字サイズ） -->
+                    <div th:if="${dayTotalAmountMap[day.date] != null and dayTotalAmountMap[day.date] > 0}"
+                         class="text-lg sm:text-base text-blue-500 mb-1">
+                        合計：<span th:text="${dayTotalAmountMap[day.date]} + '円'"></span>
+                    </div>
+
+                    <!-- 予定リスト（スクロール対応） -->
+                    <div class="flex-1 overflow-y-auto scrollbar-visible mt-1">
+                        <div th:each="schedule : ${day.schedules}" 
+                             class="text-lg sm:text-base text-gray-700 mt-1">
+                            <span th:text="${schedule.scheduleTitle}"></span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 日付がない場合（空セル） -->
+                <div th:if="${day == null}" class="aspect-square border rounded bg-gray-50"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- 予算モーダル -->
+<div id="budgetModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-96 relative">
+
+        <h2 class="text-xl font-bold mb-4" th:text="${existingBudget} ? '予算修正' : '予算登録'"></h2>
+
+        <form th:action="@{/budget/register}" method="post" class="space-y-4" id="budgetForm">
+            <input type="hidden" name="loginUserName" th:value="${#authentication.name}">
+            <input type="hidden" name="budgetId" th:value="${existingBudgetId}">
+
+            <div>
+                <label class="block font-semibold mb-1">年月</label>
+                <input type="month" name="budgetMonth"
+                       th:value="${existingBudgetMonth}"
+                       required
+                       class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300">
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">予算金額</label>
+                <input type="number" name="budgetAmount"
+                       th:value="${budgetAmount}"
+                       placeholder="金額"
+                       required
+                       class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300">
+            </div>
+
+            <!-- 修正とカレンダーに戻るボタンだけを中央に配置 -->
+            <div class="flex justify-center gap-6 mt-4">
+                <button type="submit"
+                        th:text="${existingBudget} ? '修正' : '登録'"
+                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                        th:formaction="@{/budget/update}"></button>
+
+                <button type="button" onclick="closeBudgetForm()"
+                        class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">カレンダーに戻る</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    function openBudgetForm() {
+        document.getElementById('budgetModal').classList.remove('hidden');
+        document.getElementById('budgetModal').classList.add('flex');
+    }
+    function closeBudgetForm() {
+        document.getElementById('budgetModal').classList.add('hidden');
+        document.getElementById('budgetModal').classList.remove('flex');
+    }
+</script>
+
+</body>
+</html>
