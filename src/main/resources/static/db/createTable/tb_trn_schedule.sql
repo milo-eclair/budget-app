@@ -33,5 +33,6 @@ CREATE TABLE tb_trn_schedule (
     create_date        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 作成日
     update_user        VARCHAR(10)   NOT NULL,                -- 更新者
     update_date        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 更新日
+    transferred_flg    BOOLEAN       DEFAULT FALSE,           -- 支出変更フラグ
     CONSTRAINT fk_user_schedule FOREIGN KEY(user_id) REFERENCES tb_mst_user_login(user_id)
 );

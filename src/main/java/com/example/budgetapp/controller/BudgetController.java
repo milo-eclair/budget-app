@@ -74,6 +74,7 @@ public class BudgetController {
         if (loginUserOpt.isEmpty()) {
             throw new IllegalArgumentException("指定されたユーザーが存在しません: " + principal.getName());
         }
+        
         int userId = Integer.parseInt(loginUserOpt.get().getUserId());
 
         LocalDate monthDate = LocalDate.parse(budgetMonth + "-01");

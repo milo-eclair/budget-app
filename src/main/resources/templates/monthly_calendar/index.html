@@ -100,13 +100,13 @@
                         </a>
                     </div>
 
-                    <!-- 日ごとの総合計表示（レスポンシブ文字サイズ） -->
+                    <!-- 日ごとの総合計表示 -->
                     <div th:if="${dayTotalAmountMap[day.date] != null and dayTotalAmountMap[day.date] > 0}"
                          class="text-lg sm:text-base text-blue-500 mb-1">
                         合計：<span th:text="${dayTotalAmountMap[day.date]} + '円'"></span>
                     </div>
 
-                    <!-- 予定リスト（スクロール対応） -->
+                    <!-- 予定リスト -->
                     <div class="flex-1 overflow-y-auto scrollbar-visible mt-1">
                         <div th:each="schedule : ${day.schedules}" 
                              class="text-lg sm:text-base text-gray-700 mt-1">
@@ -116,7 +116,7 @@
 
                 </div>
 
-                <!-- 日付がない場合（空セル） -->
+                <!-- 空セル -->
                 <div th:if="${day == null}" class="aspect-square border rounded bg-gray-50"></div>
             </div>
         </div>
@@ -150,15 +150,24 @@
                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300">
             </div>
 
-            <!-- 修正とカレンダーに戻るボタンだけを中央に配置 -->
-            <div class="flex justify-center gap-6 mt-4">
-                <button type="submit"
-                        th:text="${existingBudget} ? '修正' : '登録'"
-                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                        th:formaction="@{/budget/update}"></button>
+            <!-- 修正/登録ボタンを中央寄せ -->
+            <div class="flex justify-between mt-4 items-center">
+                <!-- 左側：空スペース -->
+                <div class="w-32"></div>
 
-                <button type="button" onclick="closeBudgetForm()"
-                        class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">カレンダーに戻る</button>
+                <!-- 中央：修正/登録ボタン -->
+                <div>
+                    <button type="submit"
+                            th:text="${existingBudget} ? '修正' : '登録'"
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                            th:formaction="${existingBudget} ? @{/budget/update} : @{/budget/register}"></button>
+                </div>
+
+                <!-- 右側：カレンダーに戻るボタン -->
+                <div>
+                    <button type="button" onclick="closeBudgetForm()"
+                            class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">カレンダーに戻る</button>
+                </div>
             </div>
 
         </form>
