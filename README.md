@@ -47,7 +47,7 @@
 ---
 
 ### 🔐 ログイン画面
-<img src="images/login.png" width="600">
+<img src/main/resources/static/readme_image/login.png width="600">
 
 登録済みのユーザー情報を用いてログインを行う画面です。  
 ユーザーごとの家計データを安全に管理できるようにしています。
