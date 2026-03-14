@@ -42,7 +42,7 @@
 ## 画面イメージ
 
 ### 📱 ホーム画面
-![ホーム画面](readme_image/home.png)
+![ホーム画面](src/main/resources/static/readme_image/home.png)
 
 ### 📅 月表示カレンダー
 （ここにスクリーンショット画像）
