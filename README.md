@@ -63,7 +63,7 @@
 ---
 
 ### 📆 日表示カレンダー
-<img src="images/day-calendar.png" width="600">
+![表示カレンダー画面](src/main/resources/static/readme_image/日表示カレンダー画面_デフォルト.png)
 
 選択した日の支出や予定を詳細に確認できる画面です。  
 支出の登録や予定の確認をこの画面から行うことができます。
