@@ -55,7 +55,7 @@
 ---
 
 ### 📅 月表示カレンダー
-![月表示カレンダー画面](src/main/resources/static/readme_image/月表示カレンダー画面.png)
+![月表示カレンダー画面](src/main/resources/static/readme_image/月表示カレンダー画面_デフォルト.png)
 
 1か月の予定と支出をカレンダー形式で確認できる画面です。  
 各日付をクリックすることで、その日の詳細情報を確認できます。
